@@ -97,4 +97,4 @@ Ver `.env.example`. Las principales: `APP_ENTORNO`, `IA_PROVEEDOR_URL`, `SIMULAR
 
 ## Alcance del prototipo
 
-Implementa los requisitos mínimos (RF-01 a RF-10 del informe). Los datos se guardan en memoria y se reinician al reiniciar el servicio; el ingreso es simulado con usuarios de prueba. En producción se agregaría base de datos administrada, autenticación OAuth 2.0 y cifrado de datos clínicos (Ley 1581 de 2012).
+Implementa 13 de los 14 requisitos funcionales del informe (todos menos RF-14, recordatorios de cita). Los datos se guardan en memoria y se reinician al reiniciar el servicio; el ingreso es simulado con usuarios de prueba. En producción se agregaría base de datos administrada, autenticación OAuth 2.0 y cifrado de datos clínicos (Ley 1581 de 2012).
