@@ -1,0 +1,14 @@
+# Despliegue en Render (https://render.com) como servicio web gratuito.
+services:
+  - type: web
+    name: saludia
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENTORNO
+        value: nube
+      - key: SIMULAR_FALLA_IA
+        value: "false"
