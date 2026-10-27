@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titulo %}Paciente{% endblock %}
+{% block contenido %}
+<h1>Hola, {{ usuario.nombre }}</h1>
+<div class="grid">
+  <section class="card triaje" id="asistente">
+    <h2>Asistente de orientación (IA)</h2>
+    <form method="post" action="/paciente/asistente">
+      <label for="sintomas">Describa sus síntomas</label>
+      <textarea id="sintomas" name="sintomas" rows="3" placeholder="Ej.: tengo fiebre y tos desde hace dos días"></textarea>
+      <button>Orientarme</button>
+    </form>
+    {% if triaje %}
+    <div style="margin-top:14px">
+      <p><b>Urgencia:</b> <span class="etiqueta {{ triaje.nivel.value }}">{{ triaje.nivel.value }}</span>
+         · <b>Especialidad sugerida:</b> {{ triaje.especialidad_sugerida }}</p>
+      <p>{{ triaje.recomendacion }}</p>
+      <p class="aviso">Motor que respondió: {{ triaje.motor }}</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Solicitar cita</h2>
+    <form method="post" action="/paciente/citas">
+      <label for="opcion">Médico y horario disponible</label>
+      <select id="opcion" name="opcion" required>
+        {% for m, f in opciones %}<option value="{{ m.id }}|{{ f }}">{{ f }} · {{ m.nombre }} ({{ m.especialidad }})</option>{% endfor %}
+      </select>
+      <label for="motivo">Motivo de la consulta</label>
+      <input id="motivo" name="motivo" placeholder="Ej.: control, fiebre">
+      <button>Programar cita</button>
+    </form>
+  </section>
+</div>
+
+<section class="card" style="margin-top:16px">
+  <h2>Mis citas</h2>
+  <table>
+    <tr><th>Fecha y hora</th><th>Médico</th><th>Motivo</th><th>Estado</th><th></th></tr>
+    {% for c in citas %}
+    <tr><td>{{ c.fecha_hora }}</td><td>{{ medicos[c.medico_id].nombre }}</td><td>{{ c.motivo }}</td>
+      <td><span class="etiqueta {{ c.estado.value }}">{{ c.estado.value }}</span></td>
+      <td>{% if c.estado.value == 'programada' %}<form method="post" action="/paciente/citas/{{ c.id }}/cancelar"><button class="sec">Cancelar</button></form>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="5">Aún no tiene citas.</td></tr>{% endfor %}
+  </table>
+</section>
+
+<section class="card" style="margin-top:16px">
+  <h2>Mis fórmulas médicas</h2>
+  <table>
+    <tr><th>Fórmula</th><th>Medicamentos</th><th>Estado</th></tr>
+    {% for f in formulas %}
+    <tr><td>#{{ f.id }}</td><td>{% for i in f.items %}{{ meds[i.medicamento_id].nombre }} × {{ i.cantidad }} — {{ i.indicaciones }}<br>{% endfor %}</td>
+      <td><span class="etiqueta {{ f.estado.value }}">{{ f.estado.value }}</span></td></tr>
+    {% else %}<tr><td colspan="3">Sin fórmulas.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

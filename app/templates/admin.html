@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Tablero{% endblock %}
+{% block contenido %}
+<h1>Tablero de control</h1>
+<div class="kpis">
+  <div class="kpi"><small>Pacientes</small><b>{{ ind.pacientes }}</b></div>
+  <div class="kpi"><small>Médicos</small><b>{{ ind.medicos }}</b></div>
+  <div class="kpi"><small>Citas registradas</small><b>{{ ind.citas_total }}</b></div>
+  <div class="kpi"><small>Orientaciones del asistente</small><b>{{ ind.triajes_total }}</b></div>
+</div>
+<div class="grid">
+  <section class="card">
+    <h2>Citas por estado</h2>
+    {% for estado in ['programada', 'atendida', 'cancelada'] %}
+    {% set n = ind.citas.get(estado, 0) %}
+    <p style="margin:8px 0 4px">{{ estado|capitalize }}: <b>{{ n }}</b></p>
+    <div class="barra"><i style="width: {{ (n / ind.citas_total * 100) if ind.citas_total else 0 }}%"></i></div>
+    {% endfor %}
+  </section>
+  <section class="card">
+    <h2>Orientaciones por nivel de urgencia</h2>
+    {% for nivel in ['alta', 'media', 'baja'] %}
+    {% set n = ind.triajes.get(nivel, 0) %}
+    <p style="margin:8px 0 4px">{{ nivel|capitalize }}: <b>{{ n }}</b></p>
+    <div class="barra"><i style="width: {{ (n / ind.triajes_total * 100) if ind.triajes_total else 0 }}%"></i></div>
+    {% endfor %}
+  </section>
+  <section class="card">
+    <h2>Resiliencia y monitoreo</h2>
+    <table>
+      <tr><th>Entorno</th><td>{{ entorno }}</td></tr>
+      <tr><th>Motor principal de IA</th><td>{{ motor }}</td></tr>
+      <tr><th>Circuit Breaker</th><td><span class="etiqueta {{ circuito.estado.value }}">{{ circuito.estado.value }}</span> · fallas: {{ circuito.fallas }}/{{ circuito.umbral_fallas }}</td></tr>
+      <tr><th>Health check</th><td><a href="/health">/health</a></td></tr>
+      <tr><th>Medicamentos con stock bajo</th><td>{{ alertas|length }}</td></tr>
+    </table>
+  </section>
+</div>
+{% endblock %}

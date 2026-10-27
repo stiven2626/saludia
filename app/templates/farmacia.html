@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Farmacia{% endblock %}
+{% block contenido %}
+<h1>Dispensación de medicamentos</h1>
+{% if alertas %}<div class="alerta error">Stock bajo (menos de {{ stock_minimo }} unidades): {% for m in alertas %}{{ m.nombre }} ({{ m.stock }}){% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+<div class="grid">
+  <section class="card">
+    <h2>Fórmulas pendientes</h2>
+    <table>
+      <tr><th>Fórmula</th><th>Paciente</th><th>Medicamentos</th><th></th></tr>
+      {% for f in pendientes %}
+      <tr><td>#{{ f.id }}</td><td>{{ pacientes[f.paciente_id].nombre }}</td>
+        <td>{% for i in f.items %}{{ meds[i.medicamento_id].nombre }} × {{ i.cantidad }}<br>{% endfor %}</td>
+        <td><form method="post" action="/farmacia/formulas/{{ f.id }}/dispensar"><button style="margin:0">Dispensar</button></form></td></tr>
+      {% else %}<tr><td colspan="4">No hay fórmulas pendientes.</td></tr>{% endfor %}
+    </table>
+  </section>
+  <section class="card">
+    <h2>Inventario</h2>
+    <table>
+      <tr><th>Medicamento</th><th>Presentación</th><th>Stock</th></tr>
+      {% for m in meds.values() %}<tr><td>{{ m.nombre }}</td><td>{{ m.presentacion }}</td><td>{{ m.stock }}</td></tr>{% endfor %}
+    </table>
+  </section>
+</div>
+{% endblock %}

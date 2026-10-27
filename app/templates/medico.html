@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Médico{% endblock %}
+{% block contenido %}
+<h1>Agenda de {{ usuario.nombre }} <small class="aviso">{{ usuario.especialidad }}</small></h1>
+{% for c in agenda %}
+<section class="card" style="margin-bottom:12px">
+  <h2>{{ c.fecha_hora }} · {{ pacientes[c.paciente_id].nombre }} <span class="etiqueta {{ c.estado.value }}">{{ c.estado.value }}</span></h2>
+  <p class="aviso">Motivo: {{ c.motivo }} · Documento {{ pacientes[c.paciente_id].documento }} · {{ pacientes[c.paciente_id].eps }}</p>
+  {% if c.estado.value == 'programada' %}
+  <form method="post" action="/medico/citas/{{ c.id }}/atender" class="grid">
+    <div>
+      <label>Diagnóstico</label><textarea name="descripcion" rows="2" required></textarea>
+      <label>Código CIE-10</label><input name="codigo_cie10" placeholder="Ej.: J06.9">
+    </div>
+    <div>
+      <label>Medicamento (opcional)</label>
+      <select name="medicamento_id"><option value="">Sin fórmula</option>
+        {% for m in medicamentos %}<option value="{{ m.id }}">{{ m.nombre }} (stock {{ m.stock }})</option>{% endfor %}
+      </select>
+      <label>Cantidad</label><input type="number" name="cantidad" min="0" value="1">
+      <label>Indicaciones</label><input name="indicaciones" placeholder="Ej.: 1 cada 8 horas por 3 días">
+      <button>Registrar atención</button>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% else %}
+<div class="card">No tiene citas asignadas.</div>
+{% endfor %}
+{% endblock %}

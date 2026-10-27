@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Ingreso{% endblock %}
+{% block contenido %}
+<h1>Ingresar al sistema</h1>
+<p class="aviso">Prototipo de demostración: seleccione un usuario de prueba según el rol que desea revisar.</p>
+<form method="post" action="/ingresar" class="usuarios">
+  {% for u in usuarios %}
+  <button name="usuario_id" value="{{ u.id }}">{{ u.nombre }}<small>{{ u.rol.value|capitalize }}{% if u.especialidad %} · {{ u.especialidad }}{% endif %}</small></button>
+  {% endfor %}
+</form>
+{% endblock %}

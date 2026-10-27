@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_nombre }} · {% block titulo %}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="marca">{{ app_nombre }}<span>Asistente inteligente de salud</span></div>
+  {% if usuario %}<div>{{ usuario.nombre }} · {{ usuario.rol.value }} · <a href="/salir">Salir</a></div>{% endif %}
+</header>
+<main>
+  {% if msg %}<div class="alerta ok">{{ msg }}</div>{% endif %}
+  {% if err %}<div class="alerta error">{{ err }}</div>{% endif %}
+  {% block contenido %}{% endblock %}
+</main>
+<footer>Prototipo académico · Arquitectura de Software · <a href="/docs">API (Swagger)</a> · <a href="/health">/health</a></footer>
+</body>
+</html>
