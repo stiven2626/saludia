@@ -1,0 +1,44 @@
+@startuml despliegue
+!include estilo.iuml
+title Diagrama de despliegue — SaludIA en la nube
+
+node "Dispositivo del usuario" as DEV {
+  artifact "Navegador web" as NAV
+}
+
+cloud "Render (PaaS en la nube)" {
+  node "Balanceador / proxy HTTPS" as LB
+  node "Contenedor Linux\n(servicio web)" as CONT {
+    node "Python 3 + Uvicorn (ASGI)" as RUN {
+      artifact "app.main (FastAPI)" as APP
+      component "Vistas web (Jinja2)" as WEB
+      component "API REST /api/v1" as REST
+      component "Servicios de negocio" as SRV
+      component "Repositorio en memoria" as REPO
+      component "GET /health" as HEALTH
+    }
+  }
+  node "Variables de entorno\n(configuración externa)" as ENV
+}
+
+node "GitHub" as GH {
+  artifact "Repositorio saludia" as REPOGIT
+}
+
+cloud "Proveedor de IA\n(opcional)" as IAEXT
+
+database "PostgreSQL administrado\n(fase 2)" as PG #f2f2f2
+
+NAV --> LB : HTTPS 443
+LB --> APP : HTTP $PORT
+APP --> WEB
+APP --> REST
+WEB --> SRV
+REST --> SRV
+SRV --> REPO
+LB ..> HEALTH : verificación de salud
+ENV ..> APP : APP_ENTORNO, IA_PROVEEDOR_URL,\nCB_UMBRAL_FALLAS...
+REPOGIT ..> CONT : despliegue automático\n(render.yaml)
+SRV --> IAEXT : HTTPS (Circuit Breaker)
+REPO ..> PG : reemplazo futuro\n(patrón Repository)
+@enduml

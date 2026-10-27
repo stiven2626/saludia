@@ -1,0 +1,118 @@
+@startuml clases
+!include estilo.iuml
+title Diagrama de clases — SaludIA
+skinparam linetype ortho
+hide empty members
+
+package "Dominio" {
+  abstract class Usuario {
+    - id : int
+    - nombre : str
+    - documento : str
+    - rol : Rol
+  }
+  class Paciente {
+    - eps : str
+  }
+  class Medico {
+    - especialidad : str
+    - franjas : list[str]
+  }
+  class Cita {
+    - id : int
+    - fecha_hora : str
+    - motivo : str
+    - estado : EstadoCita
+  }
+  class Diagnostico {
+    - id : int
+    - descripcion : str
+    - codigo_cie10 : str
+  }
+  class Formula {
+    - id : int
+    - estado : EstadoFormula
+  }
+  class ItemFormula {
+    - cantidad : int
+    - indicaciones : str
+  }
+  class Medicamento {
+    - id : int
+    - nombre : str
+    - presentacion : str
+    - stock : int
+  }
+  class ResultadoTriaje {
+    - sintomas : str
+    - nivel : NivelUrgencia
+    - especialidad_sugerida : str
+    - recomendacion : str
+    - motor : str
+  }
+}
+
+package "Servicios" {
+  class CitaService {
+    + franjas_disponibles(medico_id) : list
+    + solicitar(paciente_id, medico_id, fecha_hora, motivo) : Cita
+    + cancelar(cita_id, paciente_id) : Cita
+  }
+  class AtencionService {
+    + registrar(cita_id, medico_id, descripcion, cie10, items) : Diagnostico
+  }
+  class FarmaciaService {
+    + dispensar(formula_id) : Formula
+    + alertas_stock() : list
+  }
+  class AsistenteService {
+    + orientar(sintomas) : ResultadoTriaje
+  }
+}
+
+package "Patrones" {
+  interface MotorTriaje <<Strategy>> {
+    + analizar(sintomas) : ResultadoTriaje
+  }
+  class MotorReglas
+  class MotorExterno {
+    - url : str
+    - timeout : float
+  }
+  class CircuitBreaker {
+    - umbral_fallas : int
+    - tiempo_recuperacion : float
+    - estado : EstadoCircuito
+    + llamar(operacion, respaldo)
+  }
+  interface "Repositorio<T>" as Repositorio <<Repository>> {
+    + agregar(entidad)
+    + obtener(id)
+    + listar()
+  }
+  class "RepositorioMemoria<T>" as RepositorioMemoria
+}
+
+Usuario <|-- Paciente
+Usuario <|-- Medico
+Paciente "1" -- "0..*" Cita : solicita >
+Medico "1" -- "0..*" Cita : atiende >
+Cita "1" -- "0..1" Diagnostico : genera >
+Diagnostico "1" -- "0..1" Formula : prescribe >
+Formula "1" *-- "1..*" ItemFormula
+ItemFormula "*" --> "1" Medicamento
+
+MotorTriaje <|.. MotorReglas
+MotorTriaje <|.. MotorExterno
+Repositorio <|.. RepositorioMemoria
+
+AsistenteService --> "principal" MotorTriaje
+AsistenteService --> "respaldo" MotorTriaje
+AsistenteService --> CircuitBreaker
+AsistenteService ..> ResultadoTriaje : crea
+CitaService --> Repositorio
+AtencionService --> Repositorio
+FarmaciaService --> Repositorio
+AtencionService ..> Diagnostico : crea
+FarmaciaService ..> Medicamento : descuenta stock
+@enduml

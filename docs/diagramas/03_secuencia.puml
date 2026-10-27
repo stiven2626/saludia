@@ -1,0 +1,63 @@
+@startuml secuencia
+!include estilo.iuml
+title Diagrama de secuencia — De la orientación con IA a la dispensación
+autonumber
+
+actor Paciente
+participant "Vista web /\nAPI REST" as API
+participant AsistenteService as AS
+participant CircuitBreaker as CB
+participant "MotorExterno\n(IA en la nube)" as EXT
+participant "MotorReglas\n(respaldo)" as REG
+participant CitaService as CS
+actor Médico
+participant AtencionService as ATS
+actor Farmacéutico
+participant FarmaciaService as FS
+database "Repositorios" as DB
+
+== Orientación de síntomas ==
+Paciente -> API : describe síntomas
+API -> AS : orientar(sintomas)
+AS -> CB : llamar(principal, respaldo)
+alt circuito cerrado y proveedor disponible
+  CB -> EXT : analizar(sintomas)
+  EXT --> CB : ResultadoTriaje
+else proveedor falla o circuito abierto
+  CB -> REG : analizar(sintomas)
+  REG --> CB : ResultadoTriaje (respaldo)
+end
+CB --> AS : resultado
+AS --> API : nivel de urgencia y especialidad sugerida
+API --> Paciente : muestra orientación
+
+== Asignación de cita ==
+Paciente -> API : solicitar cita (médico, franja)
+API -> CS : solicitar(...)
+CS -> DB : verificar franja disponible
+alt franja libre
+  CS -> DB : guardar Cita (programada)
+  CS --> API : Cita
+  API --> Paciente : cita confirmada
+else franja ocupada
+  CS --> API : ReglaNegocioError
+  API --> Paciente : mensaje de error
+end
+
+== Atención médica ==
+Médico -> API : registrar diagnóstico y fórmula
+API -> ATS : registrar(cita_id, ...)
+ATS -> DB : obtener Cita
+note right of ATS : Sin cita programada\nno hay diagnóstico
+ATS -> DB : guardar Diagnóstico y Fórmula (pendiente)
+ATS -> DB : Cita → atendida
+ATS --> API : diagnóstico registrado
+
+== Dispensación ==
+Farmacéutico -> API : dispensar fórmula
+API -> FS : dispensar(formula_id)
+FS -> DB : validar stock
+FS -> DB : descontar inventario y Fórmula → dispensada
+FS --> API : fórmula dispensada
+API --> Farmacéutico : confirmación y alertas de stock
+@enduml
